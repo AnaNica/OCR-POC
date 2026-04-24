@@ -10,20 +10,21 @@ export default function ListPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.listNotes({ q, status });
-      setItems(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const handle = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await api.listNotes({ q, status });
+        setItems(data);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [q, status]);
 
   return (
     <div>
@@ -32,29 +33,22 @@ export default function ListPage() {
         <Link to="/upload" className="btn">Upload</Link>
       </div>
 
-      <div className="panel" style={{ marginBottom: 16 }}>
-        <form
-          onSubmit={(e) => { e.preventDefault(); load(); }}
-          className="flex"
-          style={{ gap: 12 }}
-        >
-          <input
-            placeholder="Search (delivery note no, project, filename)"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 6 }}
-          />
-          <select value={status} onChange={(e) => setStatus(e.target.value)}
-            style={{ padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 6 }}>
-            <option value="">All statuses</option>
-            <option>Extracting</option>
-            <option>ReadyForReview</option>
-            <option>Confirmed</option>
-            <option>Rejected</option>
-            <option>ExtractionFailed</option>
-          </select>
-          <button type="submit" className="btn">Search</button>
-        </form>
+      <div className="panel flex" style={{ marginBottom: 16, gap: 12 }}>
+        <input
+          placeholder="Search (delivery note no, project, filename)"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 6 }}
+        />
+        <select value={status} onChange={(e) => setStatus(e.target.value)}
+          style={{ padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 6 }}>
+          <option value="">All statuses</option>
+          <option>Extracting</option>
+          <option>ReadyForReview</option>
+          <option>Confirmed</option>
+          <option>Rejected</option>
+          <option>ExtractionFailed</option>
+        </select>
       </div>
 
       {error && <div className="banner error">{error}</div>}
