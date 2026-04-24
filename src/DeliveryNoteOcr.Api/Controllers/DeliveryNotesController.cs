@@ -240,6 +240,7 @@ public class DeliveryNotesController : ControllerBase
             }));
 
         await _trainingWriter.WriteAsync(note, ct);
+        await UpsertCorrectionCacheAsync(note, ct);
 
         await _db.SaveChangesAsync(ct);
 
@@ -305,13 +306,20 @@ public class DeliveryNotesController : ControllerBase
                 if (matched is not null) note.AssigneeCompanyId = matched.Id;
             }
 
+            var cacheApplied = await ApplyCorrectionCacheAsync(note, ct);
+
             note.Status = DeliveryNoteStatus.ReadyForReview;
             note.UpdatedAt = DateTimeOffset.UtcNow;
 
             _db.AuditEvents.Add(_audit.BuildSimple(
                 nameof(DeliveryNote), note.Id, AuditAction.ExtractionCompleted,
                 "system", AuditSource.Ocr,
-                payload: new { modelId = extraction.ModelIdUsed, confidences = extraction.AsConfidenceMap() }));
+                payload: new
+                {
+                    modelId = extraction.ModelIdUsed,
+                    confidences = extraction.AsConfidenceMap(),
+                    cacheApplied
+                }));
 
             await _db.SaveChangesAsync(ct);
         }
@@ -328,6 +336,72 @@ public class DeliveryNotesController : ControllerBase
                 payload: new { error = ex.Message }));
 
             await _db.SaveChangesAsync(ct);
+        }
+    }
+
+    private async Task<bool> ApplyCorrectionCacheAsync(DeliveryNote note, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(note.ContentHash)) return false;
+
+        var cache = await _db.CorrectionCaches
+            .FirstOrDefaultAsync(c => c.ContentHash == note.ContentHash, ct);
+        if (cache is null) return false;
+
+        note.DeliveryNoteNo = cache.DeliveryNoteNo ?? note.DeliveryNoteNo;
+        note.ProjectNumber = cache.ProjectNumber ?? note.ProjectNumber;
+        note.DeliveryDate = cache.DeliveryDate ?? note.DeliveryDate;
+        note.AssigneeCompanyId = cache.AssigneeCompanyId ?? note.AssigneeCompanyId;
+        note.AssigneeRawText = cache.AssigneeRawText ?? note.AssigneeRawText;
+        note.SupplierName = cache.SupplierName ?? note.SupplierName;
+        note.Site = cache.Site ?? note.Site;
+        note.CostCentre = cache.CostCentre ?? note.CostCentre;
+
+        note.ModelIdUsed = $"{note.ModelIdUsed} + correction-cache";
+        cache.TimesApplied++;
+
+        _logger.LogInformation(
+            "Applied correction cache {CacheId} (source note {SourceId}) to {NoteId}",
+            cache.Id, cache.SourceNoteId, note.Id);
+        return true;
+    }
+
+    private async Task UpsertCorrectionCacheAsync(DeliveryNote note, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(note.ContentHash)) return;
+
+        var existing = await _db.CorrectionCaches
+            .FirstOrDefaultAsync(c => c.ContentHash == note.ContentHash, ct);
+
+        if (existing is null)
+        {
+            _db.CorrectionCaches.Add(new CorrectionCache
+            {
+                ContentHash = note.ContentHash,
+                DeliveryNoteNo = note.DeliveryNoteNo,
+                ProjectNumber = note.ProjectNumber,
+                DeliveryDate = note.DeliveryDate,
+                AssigneeCompanyId = note.AssigneeCompanyId,
+                AssigneeRawText = note.AssigneeRawText,
+                SupplierName = note.SupplierName,
+                Site = note.Site,
+                CostCentre = note.CostCentre,
+                SourceNoteId = note.Id,
+                UpdatedBy = _user.UserId
+            });
+        }
+        else
+        {
+            existing.DeliveryNoteNo = note.DeliveryNoteNo;
+            existing.ProjectNumber = note.ProjectNumber;
+            existing.DeliveryDate = note.DeliveryDate;
+            existing.AssigneeCompanyId = note.AssigneeCompanyId;
+            existing.AssigneeRawText = note.AssigneeRawText;
+            existing.SupplierName = note.SupplierName;
+            existing.Site = note.Site;
+            existing.CostCentre = note.CostCentre;
+            existing.SourceNoteId = note.Id;
+            existing.UpdatedAt = DateTimeOffset.UtcNow;
+            existing.UpdatedBy = _user.UserId;
         }
     }
 
