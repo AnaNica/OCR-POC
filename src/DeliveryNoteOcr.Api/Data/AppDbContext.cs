@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<TrainingLabel> TrainingLabels => Set<TrainingLabel>();
     public DbSet<TrainingRun> TrainingRuns => Set<TrainingRun>();
+    public DbSet<CorrectionCache> CorrectionCaches => Set<CorrectionCache>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -60,6 +61,11 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.DeliveryNoteId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.TrainingRun).WithMany()
                 .HasForeignKey(x => x.TrainingRunId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        b.Entity<CorrectionCache>(e =>
+        {
+            e.HasIndex(x => x.ContentHash).IsUnique();
         });
     }
 }
