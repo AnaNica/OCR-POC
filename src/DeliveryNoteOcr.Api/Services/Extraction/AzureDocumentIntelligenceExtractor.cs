@@ -30,6 +30,14 @@ public class AzureDocumentIntelligenceExtractor : IDocumentExtractor
     private static readonly Regex LseRegex = new(
         @"\bLSE\s*(\d{5,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly Regex SiteRegex = new(
+        @"(?:Baustelle|Baust\.?|Bauvorhaben|BVH|Einsatzort|Ort)[\s:\-]*([^\r\n]{3,80})",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex CostCentreRegex = new(
+        @"(?:Kostenstelle|Kst\.?|K[-\s]?Stelle|KSt)[\s:\-]*([A-Za-z0-9][A-Za-z0-9\-\/\.]{1,20})",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private readonly AzureDocumentIntelligenceOptions _options;
     private readonly DocumentIntelligenceClient _client;
     private readonly ILogger<AzureDocumentIntelligenceExtractor> _logger;
@@ -140,7 +148,32 @@ public class AzureDocumentIntelligenceExtractor : IDocumentExtractor
 
         var topLeft = ExtractTopLeftBlock(analyzeResult);
         if (!string.IsNullOrWhiteSpace(topLeft))
+        {
             result.Assignee = new ExtractedField(topLeft, null);
+            result.SupplierName = new ExtractedField(topLeft, null);
+        }
+
+        var site = SiteRegex.Match(content);
+        if (site.Success)
+        {
+            var value = CleanLabelValue(site.Groups[1].Value);
+            if (!string.IsNullOrWhiteSpace(value))
+                result.Site = new ExtractedField(value, null);
+        }
+
+        var kst = CostCentreRegex.Match(content);
+        if (kst.Success)
+        {
+            var value = CleanLabelValue(kst.Groups[1].Value);
+            if (!string.IsNullOrWhiteSpace(value))
+                result.CostCentre = new ExtractedField(value, null);
+        }
+    }
+
+    private static string CleanLabelValue(string raw)
+    {
+        var v = Regex.Replace(raw, @"\s+", " ").Trim().TrimEnd(',', ';', ':', '.', '-');
+        return v.Length > 60 ? v[..60] : v;
     }
 
     private static readonly Regex LegalFormRegex = new(
