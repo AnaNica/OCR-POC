@@ -3,7 +3,6 @@ import ListPage from './pages/ListPage';
 import UploadPage from './pages/UploadPage';
 import ReviewPage from './pages/ReviewPage';
 import CompaniesPage from './pages/CompaniesPage';
-import TrainingPage from './pages/TrainingPage';
 
 export default function App() {
   return (
@@ -20,9 +19,6 @@ export default function App() {
           <NavLink to="/companies" className={({ isActive }) => (isActive ? 'active' : '')}>
             Companies
           </NavLink>
-          <NavLink to="/training" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Training
-          </NavLink>
         </nav>
       </header>
       <main className="container">
@@ -32,7 +28,6 @@ export default function App() {
           <Route path="/notes/:id" element={<ReviewPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/companies" element={<CompaniesPage />} />
-          <Route path="/training" element={<TrainingPage />} />
         </Routes>
       </main>
     </div>

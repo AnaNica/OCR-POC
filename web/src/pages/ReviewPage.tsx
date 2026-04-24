@@ -74,6 +74,7 @@ export default function ReviewPage() {
     try {
       await api.updateNote(id, form);
       await api.confirmNote(id);
+      api.triggerRetrain('Auto-triggered on confirm').catch(() => {});
       nav('/notes');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
@@ -200,7 +201,7 @@ export default function ReviewPage() {
             <button className="btn" onClick={confirm} disabled={busy}>Confirm</button>
           </div>
           <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
-            Confirming writes a training label to the learning-loop store and audits the change.
+            Confirming audits the change, writes a training label, and queues a retraining run.
           </div>
         </div>
       </div>
