@@ -1,0 +1,31 @@
+# Secrets
+appsettings.Development.json
+appsettings.Local.json
+**/.env
+**/.env.*
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Node / Vite
+web/node_modules/
+web/dist/
+web/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local runtime data (db + stored PDFs + training artifacts)
+runtime/
+src/DeliveryNoteOcr.Api/runtime/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Internal requirements doc — not part of the POC code
+Delivery_Note_OCR_Project_Plan_v0.2.docx

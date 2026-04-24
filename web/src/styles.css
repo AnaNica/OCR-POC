@@ -1,0 +1,134 @@
+:root {
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --border: #e3e6eb;
+  --text: #1f2430;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --conf-high: #059669;
+  --conf-med: #d97706;
+  --conf-low: #dc2626;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.layout { display: flex; flex-direction: column; min-height: 100vh; }
+.topbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.topbar h1 { font-size: 16px; margin: 0; }
+.topbar nav a { margin-right: 16px; color: var(--text); }
+.topbar nav a.active { color: var(--primary); font-weight: 600; }
+
+.container { padding: 20px 24px; flex: 1; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn:hover { background: var(--primary-hover); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn.secondary:hover { background: #f0f2f5; }
+.btn.danger { background: var(--danger); }
+
+table { width: 100%; border-collapse: collapse; background: var(--panel); }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+th { background: #fafbfc; font-weight: 600; font-size: 12px; text-transform: uppercase; color: var(--muted); }
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.status-Extracting { background: #dbeafe; color: #1e40af; }
+.status-ReadyForReview { background: #fef3c7; color: #92400e; }
+.status-Confirmed { background: #d1fae5; color: #065f46; }
+.status-Rejected { background: #fee2e2; color: #991b1b; }
+.status-ExtractionFailed { background: #fee2e2; color: #991b1b; }
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100vh - 120px);
+}
+.pdf-pane { overflow: auto; background: #2a2d34; border-radius: 8px; padding: 12px; }
+.form-pane { overflow: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.field-row { display: flex; gap: 8px; align-items: center; }
+.field input, .field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+.field input:focus, .field select:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+
+.conf {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.conf.high { background: #d1fae5; color: var(--conf-high); }
+.conf.med { background: #fef3c7; color: var(--conf-med); }
+.conf.low { background: #fee2e2; color: var(--conf-low); }
+
+.flex { display: flex; gap: 8px; align-items: center; }
+.space-between { justify-content: space-between; }
+.muted { color: var(--muted); }
+
+.upload-drop {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--panel);
+  transition: border-color .15s, background .15s;
+}
+.upload-drop.drag { border-color: var(--primary); background: #eff6ff; }
+
+.banner { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.banner.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.banner.info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
